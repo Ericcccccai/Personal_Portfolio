@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alex Dev | Game Design & Development</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              // using rgb(var(...) / <alpha-value>) enables opacity modifiers like bg-primary/50
+              primary: 'rgb(var(--color-primary) / <alpha-value>)', 
+              secondary: 'rgb(var(--color-secondary) / <alpha-value>)',
+              accent: '#10b981', // Emerald 500
+              dark: '#0f172a', // Slate 900
+              surface: '#1e293b', // Slate 800
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      :root {
+        /* Default: 2026 Trend (Teal-ish) */
+        --color-primary: 13 148 136; /* Teal 600 equivalent */
+        --color-secondary: 45 212 191; /* Teal 400 equivalent */
+      }
+
+      /* Custom scrollbar for a technical feel */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 5px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "framer-motion": "https://esm.sh/framer-motion@^12.27.1",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+</head>
+  <body class="bg-dark text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-primary selection:text-white">
+    <div id="root"></div>
+  </body>
+</html>
