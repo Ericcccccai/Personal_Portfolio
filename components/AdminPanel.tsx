@@ -46,7 +46,7 @@ const AdminPanel: React.FC = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === 'admin') {
+    if (passwordInput === '021202') {
       setIsAuthenticated(true);
       setAuthError(false);
     } else {
