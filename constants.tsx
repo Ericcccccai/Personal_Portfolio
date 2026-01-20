@@ -289,9 +289,9 @@ export const CONTACT_CONTENT = {
 };
 
 export const SOCIALS: SocialLink[] = [
-  { platform: 'GitHub', url: 'https://github.com', icon: Github },
+  { platform: 'GitHub', url: 'https://github.com/Ericcccccai', icon: Github },
   { platform: 'Itch.io', url: 'https://ericcccccai.itch.io/', icon: Gamepad2 },
-  { platform: 'LinkedIn', url: 'https://linkedin.com', icon: Linkedin },
+  { platform: 'LinkedIn', url: 'https://www.linkedin.com/in/ericcccccai/', icon: Linkedin },
   { platform: 'Email', url: 'mailto:Eric021202@gmail.com', icon: Mail },
 ];
 
