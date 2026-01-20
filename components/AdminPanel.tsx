@@ -232,7 +232,9 @@ export const SECTION_TITLES = ${JSON.stringify(content.sectionTitles, null, 2)};
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (reader.result) updateProject(index, 'imageUrl', reader.result as string);
+        if (reader.result) {
+            updateProject(index, 'imageUrl', reader.result as string);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -389,20 +391,37 @@ export const SECTION_TITLES = ${JSON.stringify(content.sectionTitles, null, 2)};
                           <div className="space-y-3">
                             <input type="text" value={project.title} onChange={(e) => updateProject(idx, 'title', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white focus:border-primary outline-none" placeholder="Title"/>
                             <textarea value={project.description} onChange={(e) => updateProject(idx, 'description', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white focus:border-primary outline-none h-20" placeholder="Description"/>
+                            
                             <div className="grid grid-cols-2 gap-3">
                                 <select value={project.category} onChange={(e) => updateProject(idx, 'category', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white">
                                     <option value="Game">Game</option>
                                     <option value="Web">Web</option>
                                     <option value="Other">Other</option>
                                 </select>
-                                <div className="flex gap-2">
-                                  <input type="text" value={project.imageUrl} onChange={(e) => updateProject(idx, 'imageUrl', e.target.value)} className="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white text-xs" placeholder="Image URL"/>
-                                  <label className="cursor-pointer px-3 py-2 bg-slate-800 border border-slate-700 rounded hover:bg-slate-700 text-slate-300 flex items-center justify-center">
-                                    <Upload size={16} /><input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(idx, e)} />
-                                  </label>
+                                
+                                <div className="flex gap-2 items-center">
+                                     <label className="flex-1 cursor-pointer h-[38px] bg-slate-800 border border-slate-700 rounded hover:bg-slate-700 text-slate-300 flex items-center justify-center gap-2 text-xs font-bold transition-colors relative">
+                                        <Upload size={14} /> Upload
+                                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" onChange={(e) => handleImageUpload(idx, e)} />
+                                    </label>
+                                    {project.imageUrl && (
+                                         <button 
+                                            onClick={() => updateProject(idx, 'imageUrl', '')}
+                                            className="h-[38px] w-[38px] bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded flex items-center justify-center transition-colors"
+                                            title="Remove Image"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
-                            {project.imageUrl && <img src={project.imageUrl} alt="Preview" className="w-full h-32 object-cover rounded border border-slate-700 opacity-60 hover:opacity-100" />}
+
+                            {project.imageUrl && (
+                                <div className="mt-2 relative w-full h-32 bg-slate-900 rounded overflow-hidden border border-slate-700 group">
+                                    <img src={project.imageUrl} alt="Preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-2 gap-2">
                                 <input placeholder="Demo URL" type="text" value={project.demoUrl || ''} onChange={(e) => updateProject(idx, 'demoUrl', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-white"/>
                                 <input placeholder="Repo URL" type="text" value={project.repoUrl || ''} onChange={(e) => updateProject(idx, 'repoUrl', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-white"/>
