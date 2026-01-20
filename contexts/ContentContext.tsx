@@ -7,9 +7,11 @@ interface ContentContextType {
   updateContent: (newContent: Partial<AppContent>) => void;
   resetContent: () => void;
   saveToLocalStorage: () => void;
+  setManualCloudUrl: (url: string) => void;
   hasUnsavedChanges: boolean;
   isLoadingCloud: boolean;
   usingCloudData: boolean;
+  dataSource: 'local_file' | 'local_storage_draft' | 'cloud_constant' | 'cloud_dynamic';
 }
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
@@ -32,24 +34,35 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isLoadingCloud, setIsLoadingCloud] = useState(false);
   const [usingCloudData, setUsingCloudData] = useState(false);
+  const [dataSource, setDataSource] = useState<'local_file' | 'local_storage_draft' | 'cloud_constant' | 'cloud_dynamic'>('local_file');
+
+  // Trigger a reload when this changes
+  const [cloudUrlTrigger, setCloudUrlTrigger] = useState<string | null>(null);
 
   useEffect(() => {
     const loadContent = async () => {
-      // 1. Try loading from Cloud URL if configured
-      if (CONSTANTS.EXTERNAL_DATA_URL) {
+      // Priority 1: Cloud Data
+      // Check Constant first, then LocalStorage override (Dynamic)
+      const dynamicUrl = localStorage.getItem('portfolio_raw_url');
+      const targetUrl = CONSTANTS.EXTERNAL_DATA_URL || dynamicUrl;
+
+      if (targetUrl) {
         setIsLoadingCloud(true);
         try {
-          const response = await fetch(CONSTANTS.EXTERNAL_DATA_URL);
+          const response = await fetch(targetUrl);
           if (response.ok) {
             const cloudData = await response.json();
-            // Merge with initial to ensure structure
+            
+            // Merge with initial to ensure structure integrity
             setContent(prev => ({ ...prev, ...cloudData }));
+            
             setUsingCloudData(true);
+            setDataSource(CONSTANTS.EXTERNAL_DATA_URL ? 'cloud_constant' : 'cloud_dynamic');
             setIsLoadingCloud(false);
             
-            // If cloud load is successful, we don't load local storage immediately
-            // to avoid conflicts, UNLESS the user has newer local changes.
-            // For simplicity, Cloud > Hardcode. Local Storage > Cloud (draft mode).
+            // If cloud load is successful, we stop here. 
+            // We do NOT load local drafts if cloud is active, unless user explicitly edits.
+            return; 
           } else {
             console.warn("Failed to fetch cloud content:", response.status);
           }
@@ -60,13 +73,13 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         }
       }
 
-      // 2. Override with Local Storage (Drafts)
+      // Priority 2: Local Storage Drafts (if no cloud or cloud failed)
       const savedContent = localStorage.getItem('zhehao_cai_portfolio_content');
       if (savedContent) {
         try {
           const parsed = JSON.parse(savedContent);
-          // Only override if we really want drafts to persist over cloud
           setContent(prev => ({ ...prev, ...parsed }));
+          setDataSource('local_storage_draft');
         } catch (e) {
           console.error("Failed to parse saved content", e);
         }
@@ -74,7 +87,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
 
     loadContent();
-  }, []);
+  }, [cloudUrlTrigger]);
 
   const updateContent = (newPart: Partial<AppContent>) => {
     setContent(prev => ({ ...prev, ...newPart }));
@@ -94,16 +107,29 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     
     localStorage.setItem('zhehao_cai_portfolio_content', JSON.stringify(contentToSave));
     setHasUnsavedChanges(false);
+    setDataSource('local_storage_draft');
+  };
+
+  const setManualCloudUrl = (url: string) => {
+    if (!url) {
+      localStorage.removeItem('portfolio_raw_url');
+    } else {
+      localStorage.setItem('portfolio_raw_url', url);
+    }
+    // Force reload
+    setCloudUrlTrigger(url || 'reset');
+    // Clear local drafts to ensure we see the cloud version
+    localStorage.removeItem('zhehao_cai_portfolio_content');
   };
 
   const resetContent = () => {
-    if (window.confirm("Are you sure? This will discard local changes and reload from the source (Cloud or File).")) {
+    if (window.confirm("Are you sure? This will discard local changes and reload from the source.")) {
       localStorage.removeItem('zhehao_cai_portfolio_content');
       window.location.reload();
     }
   };
 
-  // Restore icons if needed
+  // Restore icons if needed (re-hydration)
   useEffect(() => {
     if (content.socials[0].icon === null) {
        setContent(prev => ({
@@ -119,10 +145,12 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
       content, 
       updateContent, 
       resetContent, 
-      saveToLocalStorage, 
+      saveToLocalStorage,
+      setManualCloudUrl,
       hasUnsavedChanges,
       isLoadingCloud,
-      usingCloudData
+      usingCloudData,
+      dataSource
     }}>
       {children}
     </ContentContext.Provider>
