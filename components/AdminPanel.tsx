@@ -327,7 +327,6 @@ export const SECTION_TITLES = ${JSON.stringify(content.sectionTitles, null, 2)};
                         <Lock size={32} />
                       </div>
                       <p className="text-slate-400">Enter Admin Password</p>
-                      <p className="text-slate-500 text-xs mt-2">(Default: admin)</p>
                     </div>
                     <div className="relative">
                       <input

@@ -70,8 +70,8 @@ export const HERO_CONTENT = {
 // RESUME URLS
 // These assume 'resume_en.pdf' and 'resume_cn.pdf' are located in the 'public' folder.
 export const RESUME_URLS = {
-  en: "/resume_en.pdf",
-  zh: "/resume_cn.pdf"
+  en: "/public/resume_en.pdf",
+  zh: "/public/resume_cn.pdf"
 };
 
 export const CURRENT_FOCUS = {
