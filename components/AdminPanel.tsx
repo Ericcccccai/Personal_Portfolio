@@ -400,19 +400,17 @@ export const SECTION_TITLES = ${JSON.stringify(content.sectionTitles, null, 2)};
                                 </select>
                                 
                                 <div className="flex gap-2 items-center">
-                                     <label className="flex-1 cursor-pointer h-[38px] bg-slate-800 border border-slate-700 rounded hover:bg-slate-700 text-slate-300 flex items-center justify-center gap-2 text-xs font-bold transition-colors relative">
-                                        <Upload size={14} /> Upload
+                                    <input 
+                                        type="text" 
+                                        value={project.imageUrl}
+                                        onChange={(e) => updateProject(idx, 'imageUrl', e.target.value)}
+                                        placeholder="https://... or Upload ->"
+                                        className="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-xs text-white"
+                                    />
+                                    <label className="cursor-pointer h-[38px] w-[38px] bg-slate-800 border border-slate-700 rounded hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-colors relative" title="Upload Image">
+                                        <Upload size={14} />
                                         <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" onChange={(e) => handleImageUpload(idx, e)} />
                                     </label>
-                                    {project.imageUrl && (
-                                         <button 
-                                            onClick={() => updateProject(idx, 'imageUrl', '')}
-                                            className="h-[38px] w-[38px] bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded flex items-center justify-center transition-colors"
-                                            title="Remove Image"
-                                        >
-                                            <X size={16} />
-                                        </button>
-                                    )}
                                 </div>
                             </div>
 

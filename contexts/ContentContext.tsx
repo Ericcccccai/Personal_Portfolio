@@ -6,13 +6,17 @@ interface ContentContextType {
   content: AppContent;
   updateContent: (newContent: Partial<AppContent>) => void;
   resetContent: () => void;
-  saveToLocalStorage: () => void;
+  saveToLocalStorage: () => boolean;
   setManualCloudUrl: (url: string) => void;
   hasUnsavedChanges: boolean;
   isLoadingCloud: boolean;
   usingCloudData: boolean;
   dataSource: 'local_file' | 'local_storage_draft' | 'cloud_constant' | 'cloud_dynamic';
 }
+
+// Define key constant to ensure consistency (Updated to v5 to flush old data)
+const STORAGE_KEY = 'zhehao_cai_portfolio_content_v5';
+const CLOUD_URL_KEY = 'portfolio_raw_url';
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
 
@@ -43,7 +47,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
     const loadContent = async () => {
       // Priority 1: Cloud Data
       // Check Constant first, then LocalStorage override (Dynamic)
-      const dynamicUrl = localStorage.getItem('portfolio_raw_url');
+      const dynamicUrl = localStorage.getItem(CLOUD_URL_KEY);
       const targetUrl = CONSTANTS.EXTERNAL_DATA_URL || dynamicUrl;
 
       if (targetUrl) {
@@ -74,7 +78,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
       }
 
       // Priority 2: Local Storage Drafts (if no cloud or cloud failed)
-      const savedContent = localStorage.getItem('zhehao_cai_portfolio_content');
+      const savedContent = localStorage.getItem(STORAGE_KEY);
       if (savedContent) {
         try {
           const parsed = JSON.parse(savedContent);
@@ -95,36 +99,47 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const saveToLocalStorage = () => {
-    const contentToSave = {
-        ...content,
-        // Strip icons for storage
-        socials: content.socials.map(s => ({ ...s, icon: null })), 
-        interests: {
-            en: content.interests.en.map(i => ({ ...i, icon: null })),
-            zh: content.interests.zh.map(i => ({ ...i, icon: null }))
+    try {
+        const contentToSave = {
+            ...content,
+            // Strip icons for storage
+            socials: content.socials.map(s => ({ ...s, icon: null })), 
+            interests: {
+                en: content.interests.en.map(i => ({ ...i, icon: null })),
+                zh: content.interests.zh.map(i => ({ ...i, icon: null }))
+            }
+        };
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(contentToSave));
+        setHasUnsavedChanges(false);
+        setDataSource('local_storage_draft');
+        return true;
+    } catch (e: any) {
+        console.error("Save failed", e);
+        if (e.name === 'QuotaExceededError' || e.code === 22) {
+            alert("Storage Limit Exceeded!\n\nYour images are too large to save in the 'Draft' (Browser Storage).\n\nTips:\n1. Use 'Go Live' (Cloud Sync) instead - it handles larger data.\n2. Or use external Image URLs instead of uploading files.\n3. Or delete some images.");
+        } else {
+            alert("Failed to save draft locally: " + e.message);
         }
-    };
-    
-    localStorage.setItem('zhehao_cai_portfolio_content', JSON.stringify(contentToSave));
-    setHasUnsavedChanges(false);
-    setDataSource('local_storage_draft');
+        return false;
+    }
   };
 
   const setManualCloudUrl = (url: string) => {
     if (!url) {
-      localStorage.removeItem('portfolio_raw_url');
+      localStorage.removeItem(CLOUD_URL_KEY);
     } else {
-      localStorage.setItem('portfolio_raw_url', url);
+      localStorage.setItem(CLOUD_URL_KEY, url);
     }
     // Force reload
     setCloudUrlTrigger(url || 'reset');
     // Clear local drafts to ensure we see the cloud version
-    localStorage.removeItem('zhehao_cai_portfolio_content');
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   const resetContent = () => {
     if (window.confirm("Are you sure? This will discard local changes and reload from the source.")) {
-      localStorage.removeItem('zhehao_cai_portfolio_content');
+      localStorage.removeItem(STORAGE_KEY);
       window.location.reload();
     }
   };
@@ -145,7 +160,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
       content, 
       updateContent, 
       resetContent, 
-      saveToLocalStorage,
+      saveToLocalStorage, 
       setManualCloudUrl,
       hasUnsavedChanges,
       isLoadingCloud,

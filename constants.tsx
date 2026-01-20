@@ -1,6 +1,16 @@
 import { Project, Interest, SocialLink, Experience } from './types';
 import { Gamepad2, Code, Terminal, Monitor, Github, Linkedin, Mail, Twitter, Cpu, Palette, Globe } from 'lucide-react';
 
+// Using online placeholders to ensure the site renders correctly.
+// If you have local images, move them to 'public/ProjectImages/' and update these paths to '/ProjectImages/YourImage.png'.
+const arkdigImg2 = 'https://placehold.co/600x400/0d9488/ffffff?text=Arkdig';
+const capsulesImg2 = 'https://placehold.co/600x400/0d9488/ffffff?text=Shoot+The+Capsules';
+const langImg2 = 'https://placehold.co/600x400/0d9488/ffffff?text=Lang';
+const keepAliveImg2 = 'https://placehold.co/600x400/0d9488/ffffff?text=Keep+Alive';
+const arkdigImg = './ProjectImages/Arkdig.png'
+const capsulesImg = './ProjectImages/ShootTheCapsules.png'
+const langImg = './ProjectImages/Lang.png'
+const keepAliveImg = './ProjectImages/KeepAlive.png'
 /**
  * CLOUD CONFIGURATION
  * 
@@ -57,6 +67,8 @@ export const HERO_CONTENT = {
   }
 };
 
+// RESUME URLS
+// These assume 'resume_en.pdf' and 'resume_cn.pdf' are located in the 'public' folder.
 export const RESUME_URLS = {
   en: "/resume_en.pdf",
   zh: "/resume_cn.pdf"
@@ -65,19 +77,19 @@ export const RESUME_URLS = {
 export const CURRENT_FOCUS = {
   en: {
     label: "Currently Cooking",
-    title: "Voxel Engine Architecture",
-    description: "I'm currently rewriting my custom C++ voxel engine to support real-time global illumination using Vulkan ray tracing. It's a deep dive into low-level graphics programming and memory management.",
-    tags: ["C++", "Vulkan", "GLSL", "Systems Programming"],
-    link: "https://github.com",
-    linkText: "View Devlog"
+    title: "CarAI Platform Development",
+    description: "I'm currently building the official website for CarAI. The project involves creating a responsive, high-performance web interface to showcase AI-driven automotive solutions and visualize complex data.",
+    tags: ["React", "TypeScript", "UI/UX", "Web Development"],
+    link: "https://autofit-ai-345241661940.us-west1.run.app/", 
+    linkText: "View Project"
   },
   zh: {
     label: "正在开发",
-    title: "体素引擎架构",
-    description: "我正在重写我的自定义C++体素引擎，利用Vulkan光线追踪支持实时全局光照。这是对底层图形编程和内存管理的深入探索。",
-    tags: ["C++", "Vulkan", "GLSL", "系统编程"],
-    link: "https://github.com",
-    linkText: "查看开发日志"
+    title: "CarAI 平台开发",
+    description: "我正在构建 CarAI 的官方网站。该项目致力于创建一个响应式、高性能的 Web 界面，用于展示 AI 驱动的汽车解决方案并实现复杂数据的可视化。",
+    tags: ["React", "TypeScript", "UI/UX", "Web Development"],
+    link: "https://autofit-ai-345241661940.us-west1.run.app/",
+    linkText: "查看项目"
   }
 };
 
@@ -103,11 +115,11 @@ export const ALL_GAME_TITLES = Object.values(GAMES_PLAYED).flat();
 export const BACKGROUND_CONTENT = {
   en: {
     title: "Background",
-    summary: "I'm a senior Game Design student passionate about creating systems that feel good to interact with. My journey started with modding classic RPGs and evolved into building full-stack applications and custom game engines. I bridge the gap between technical logic and player experience.",
+    summary: "I'm a senior Game Design student passionate about creating systems that feel good to interact with. My journey started with building full-stack applications and evolved into creating custom games and controllers. I bridge the gap between technical logic and player experience.",
     coreFocusTitle: "Core Focus",
     coreFocusDesc: "I specialize in bridging the gap between artistic vision and technical implementation. Whether it's optimizing rendering pipelines or designing intuitive input systems, I love the challenge of making things feel \"just right.\"",
     skillsTitle: "> technical_skills",
-    skills: ["Unity / C#", "React / TypeScript", "Unreal Engine 5", "GLSL Shaders", "UI/UX Design", "Node.js"]
+    skills: ["Unity / C#", "React / TypeScript", "Unreal Engine 5", "Vibe Code Cleaning", "UI/UX Design", "Node.js"]
   },
   zh: {
     title: "背景经历",
@@ -115,92 +127,92 @@ export const BACKGROUND_CONTENT = {
     coreFocusTitle: "核心关注",
     coreFocusDesc: "我专注于连接艺术愿景与技术实现。无论是优化渲染管线还是设计直观的输入系统，我都热爱让一切“恰到好处”的挑战。",
     skillsTitle: "> 技术技能",
-    skills: ["Unity / C#", "React / TypeScript", "Unreal Engine 5", "GLSL Shaders", "UI/UX Design", "Node.js"]
+    skills: ["Unity / C#", "React / TypeScript", "Unreal Engine 5", "Vibe Code Cleaning", "UI/UX Design", "Node.js"]
   }
 };
 
 export const PROJECTS = {
   en: [
     {
-      id: '1',
-      title: 'Latest Game Project 1',
+      id: 'arkdig',
+      title: 'Arkdig',
       category: 'Game',
-      description: 'A recent game project available on my Itch.io page. Click the link to play directly in your browser or download.',
-      technologies: ['Unity', 'C#', 'Game Design'],
-      imageUrl: 'https://picsum.photos/800/450?random=10',
-      demoUrl: 'https://ericcccccai.itch.io/',
+      description: 'A prototype game created to see the result of combining mechanics from Arknights and TFT.',
+      technologies: ['Love2D', 'Lua', 'Prototype'],
+      imageUrl: arkdigImg,
+      demoUrl: 'https://ericcccccai.itch.io/arkdig',
       featured: true
     },
     {
-      id: '2',
-      title: 'Latest Game Project 2',
+      id: 'shoot-capsules',
+      title: 'Shoot the CAPSULES!',
       category: 'Game',
-      description: 'Another exciting game prototype exploring new mechanics and player interactions.',
-      technologies: ['Unreal Engine', 'Blueprints', '3D'],
-      imageUrl: 'https://picsum.photos/800/450?random=11',
-      demoUrl: 'https://ericcccccai.itch.io/',
+      description: 'A quick prototype of a TPS game, where the capsule zombies will try to attack the player when the player tries to shoot them while escaping a maze.',
+      technologies: ['Unity3D', 'C#', 'Prototype'],
+      imageUrl: capsulesImg,
+      demoUrl: 'https://ericcccccai.itch.io/shoot-the-capsules',
       featured: true
     },
     {
-      id: '3',
-      title: 'Latest Game Project 3',
+      id: 'lang',
+      title: '螂！Lang!',
       category: 'Game',
-      description: 'An experimental game focusing on narrative design and atmospheric storytelling.',
-      technologies: ['Godot', 'GDScript', '2D'],
-      imageUrl: 'https://picsum.photos/800/450?random=12',
-      demoUrl: 'https://ericcccccai.itch.io/',
-      featured: false
+      description: 'A Taptap GameJam game. Created in a team of 4 within 3 days. Aims to test quick prototyping and scoping.',
+      technologies: ['Unity2D', 'C#', 'GameJam'],
+      imageUrl: langImg,
+      demoUrl: 'https://ericcccccai.itch.io/lang',
+      featured: true
     },
     {
-      id: '4',
-      title: 'Latest Game Project 4',
+      id: 'keep-alive',
+      title: 'Keep Al!ve',
       category: 'Game',
-      description: 'A jam game created within 48 hours. Tests rapid prototyping skills and scope management.',
-      technologies: ['Unity', 'C#', 'Jam'],
-      imageUrl: 'https://picsum.photos/800/450?random=13',
-      demoUrl: 'https://ericcccccai.itch.io/',
+      description: 'A simple clicking game sample to test GDevelop. Keep the chickens alive!',
+      technologies: ['GDevelop', 'TestingPurposes'],
+      imageUrl: keepAliveImg,
+      demoUrl: 'https://ericcccccai.itch.io/keep-alive',
       featured: false
     }
   ] as Project[],
   zh: [
     {
-      id: '1',
-      title: '最新游戏作品 1',
+      id: 'arkdig',
+      title: 'Arkdig',
       category: 'Game',
-      description: '发布在我的 Itch.io 主页上的最新游戏项目。点击链接即可在浏览器中直接游玩或下载。',
-      technologies: ['Unity', 'C#', 'Game Design'],
-      imageUrl: 'https://picsum.photos/800/450?random=10',
-      demoUrl: 'https://ericcccccai.itch.io/',
+      description: '一个结合了《明日方舟》与《云顶之弈》机制的原型游戏实验。',
+      technologies: ['Love2D', 'Lua', 'Prototype'],
+      imageUrl: arkdigImg,
+      demoUrl: 'https://ericcccccai.itch.io/arkdig',
       featured: true
     },
     {
-      id: '2',
-      title: '最新游戏作品 2',
+      id: 'shoot-capsules',
+      title: 'Shoot the CAPSULES!',
       category: 'Game',
-      description: '另一个令人兴奋的游戏原型，探索新的机制和玩家交互。',
-      technologies: ['Unreal Engine', 'Blueprints', '3D'],
-      imageUrl: 'https://picsum.photos/800/450?random=11',
-      demoUrl: 'https://ericcccccai.itch.io/',
+      description: '一款TPS游戏原型，玩家需在逃离迷宫时击退来袭的胶囊丧尸。',
+      technologies: ['Unity3D', 'C#', 'Prototype'],
+      imageUrl: capsulesImg,
+      demoUrl: 'https://ericcccccai.itch.io/shoot-the-capsules',
       featured: true
     },
     {
-      id: '3',
-      title: '最新游戏作品 3',
+      id: 'lang',
+      title: '螂！Lang!',
       category: 'Game',
-      description: '一款专注于叙事设计和氛围叙事的实验性游戏。',
-      technologies: ['Godot', 'GDScript', '2D'],
-      imageUrl: 'https://picsum.photos/800/450?random=12',
-      demoUrl: 'https://ericcccccai.itch.io/',
-      featured: false
+      description: 'TapTap GameJam 参赛作品。4人团队3天内开发完成，旨在挑战快速原型开发与项目规模控制。',
+      technologies: ['Unity2D', 'C#', 'GameJam'],
+      imageUrl: langImg,
+      demoUrl: 'https://ericcccccai.itch.io/lang',
+      featured: true
     },
     {
-      id: '4',
-      title: '最新游戏作品 4',
+      id: 'keep-alive',
+      title: 'Keep Al!ve',
       category: 'Game',
-      description: '在48小时内创作的Jam游戏。考验快速原型设计技能和范围管理。',
-      technologies: ['Unity', 'C#', 'Jam'],
-      imageUrl: 'https://picsum.photos/800/450?random=13',
-      demoUrl: 'https://ericcccccai.itch.io/',
+      description: '使用 GDevelop 制作的简单点击游戏样本。努力让小鸡活下来！',
+      technologies: ['GDevelop', 'TestingPurposes'],
+      imageUrl: keepAliveImg,
+      demoUrl: 'https://ericcccccai.itch.io/keep-alive',
       featured: false
     }
   ] as Project[]
@@ -212,7 +224,7 @@ export const INTERESTS = {
       id: '1',
       title: 'Procedural Generation',
       icon: Terminal,
-      description: 'Exploring algorithms like Wave Function Collapse and Perlin Noise to create infinite worlds.'
+      description: 'Exploring algorithms like Wave Function Collapse and AI assitant to create better level design and user experience.'
     },
     {
       id: '2',
@@ -222,9 +234,9 @@ export const INTERESTS = {
     },
     {
       id: '3',
-      title: 'Interactive Shaders',
+      title: 'Human-in-the-Loop AI Creation',
       icon: Cpu,
-      description: 'Writing custom shaders to achieve stylized visual effects and performant graphics.'
+      description: 'Designing workflows where AI accelerates thinking while humans retain authorship, taste, and creative control.'
     },
     {
       id: '4',
@@ -238,7 +250,7 @@ export const INTERESTS = {
       id: '1',
       title: '程序化生成',
       icon: Terminal,
-      description: '探索波函数坍缩和柏林噪声等算法以创造无限的世界。'
+      description: '探索波函数坍缩算法和AI代理的合作以为玩家提供更佳的关卡设计体验。'
     },
     {
       id: '2',
@@ -248,9 +260,9 @@ export const INTERESTS = {
     },
     {
       id: '3',
-      title: '交互式着色器',
+      title: '人类在环的AI创作',
       icon: Cpu,
-      description: '编写自定义着色器以实现风格化的视觉效果和高性能图形。'
+      description: '设计以人为核心的AI工作流程，让AI加速思考与生产力，同时保留人类的判断力、审美与创作主导权。'
     },
     {
       id: '4',
