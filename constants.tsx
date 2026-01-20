@@ -11,7 +11,7 @@ import { Gamepad2, Code, Terminal, Monitor, Github, Linkedin, Mail, Twitter, Cpu
  * 
  * Once set, the website will load content from this URL instead of the hardcoded values below.
  */
-export const EXTERNAL_DATA_URL = ""; 
+export const EXTERNAL_DATA_URL = "https://gist.githubusercontent.com/Ericcccccai/198302d6dcacaf8257e0c25ba75b22f3/raw/83407825266394be7888dfb495c4291118657941/portfolio-content.json"; 
 
 export const NAV_LINKS = {
   en: [
