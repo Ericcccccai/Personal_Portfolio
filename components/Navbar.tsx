@@ -35,7 +35,7 @@ const Navbar: React.FC = () => {
           <span className="text-primary group-hover:rotate-12 transition-transform duration-300">
             <Gamepad2 size={28} />
           </span>
-          <span className="font-mono group-hover:text-primary transition-colors">alex.dev</span>
+          <span className="font-mono group-hover:text-primary transition-colors">zhehao.dev</span>
         </a>
 
         {/* Desktop Nav */}

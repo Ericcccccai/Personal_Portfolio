@@ -31,7 +31,7 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   useEffect(() => {
     // Load from local storage on mount
-    const savedContent = localStorage.getItem('alex_dev_portfolio_content');
+    const savedContent = localStorage.getItem('zhehao_cai_portfolio_content');
     if (savedContent) {
       try {
         const parsed = JSON.parse(savedContent);
@@ -83,14 +83,14 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
         }
     };
     
-    localStorage.setItem('alex_dev_portfolio_content', JSON.stringify(contentToSave));
+    localStorage.setItem('zhehao_cai_portfolio_content', JSON.stringify(contentToSave));
     setHasUnsavedChanges(false);
   };
 
   const resetContent = () => {
     if (window.confirm("Are you sure? This will discard all local changes.")) {
       setContent(INITIAL_CONTENT);
-      localStorage.removeItem('alex_dev_portfolio_content');
+      localStorage.removeItem('zhehao_cai_portfolio_content');
       setHasUnsavedChanges(false);
     }
   };

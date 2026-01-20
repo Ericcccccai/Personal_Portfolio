@@ -19,8 +19,8 @@ export const NAV_LINKS = {
 export const HERO_CONTENT = {
   en: {
     greeting: "Hello, World! I'm",
-    name: "Alex Dev",
-    role: "Game Design & Development Student",
+    name: "Zhehao Cai",
+    role: "Game Design & Development Student (aka Eric)",
     tagline: "Building immersive digital experiences through code and creativity.",
     viewWork: "View Work",
     contactMe: "Contact Me",
@@ -32,8 +32,8 @@ export const HERO_CONTENT = {
   },
   zh: {
     greeting: "你好，世界！我是",
-    name: "Alex Dev",
-    role: "游戏设计与开发专业学生",
+    name: "Zhehao Cai",
+    role: "游戏设计与开发专业学生 (Eric)",
     tagline: "通过代码与创意打造沉浸式数字体验。",
     viewWork: "查看作品",
     contactMe: "联系我",
@@ -272,7 +272,7 @@ export const SOCIALS: SocialLink[] = [
   { platform: 'GitHub', url: 'https://github.com', icon: Github },
   { platform: 'Itch.io', url: 'https://itch.io', icon: Gamepad2 },
   { platform: 'LinkedIn', url: 'https://linkedin.com', icon: Linkedin },
-  { platform: 'Email', url: 'mailto:hello@example.com', icon: Mail },
+  { platform: 'Email', url: 'mailto:Eric021202@gmail.com', icon: Mail },
 ];
 
 export const SECTION_TITLES = {

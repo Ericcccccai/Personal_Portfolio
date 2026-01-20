@@ -25,7 +25,7 @@ const Contact: React.FC = () => {
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
             <a 
-              href="mailto:hello@example.com"
+              href="mailto:Eric021202@gmail.com"
               className="flex items-center gap-2 px-8 py-4 bg-white text-dark rounded-xl font-bold hover:bg-slate-200 transition-colors w-full sm:w-auto justify-center"
             >
               <Mail size={20} />
@@ -53,7 +53,7 @@ const Contact: React.FC = () => {
         </div>
 
         <div className="mt-16 text-center text-slate-600 text-sm">
-          <p>© {new Date().getFullYear()} Alex Dev. Built with React, Tailwind & Framer Motion.</p>
+          <p>© {new Date().getFullYear()} Zhehao Cai. Built with React, Tailwind & Framer Motion.</p>
         </div>
       </Section>
     </footer>

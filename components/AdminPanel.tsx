@@ -128,7 +128,7 @@ export const SOCIALS: SocialLink[] = [
   { platform: 'GitHub', url: 'https://github.com', icon: Github },
   { platform: 'Itch.io', url: 'https://itch.io', icon: Gamepad2 },
   { platform: 'LinkedIn', url: 'https://linkedin.com', icon: Linkedin },
-  { platform: 'Email', url: 'mailto:hello@example.com', icon: Mail },
+  { platform: 'Email', url: 'mailto:Eric021202@gmail.com', icon: Mail },
 ];
 
 export const SECTION_TITLES = ${JSON.stringify(content.sectionTitles, null, 2)};
