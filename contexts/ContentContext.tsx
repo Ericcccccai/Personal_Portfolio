@@ -8,6 +8,8 @@ interface ContentContextType {
   resetContent: () => void;
   saveToLocalStorage: () => void;
   hasUnsavedChanges: boolean;
+  isLoadingCloud: boolean;
+  usingCloudData: boolean;
 }
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
@@ -28,19 +30,50 @@ const INITIAL_CONTENT: AppContent = {
 export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [content, setContent] = useState<AppContent>(INITIAL_CONTENT);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isLoadingCloud, setIsLoadingCloud] = useState(false);
+  const [usingCloudData, setUsingCloudData] = useState(false);
 
   useEffect(() => {
-    // Load from local storage on mount
-    const savedContent = localStorage.getItem('zhehao_cai_portfolio_content');
-    if (savedContent) {
-      try {
-        const parsed = JSON.parse(savedContent);
-        // Merge with initial to ensure new structure keys exist if updated
-        setContent({ ...INITIAL_CONTENT, ...parsed });
-      } catch (e) {
-        console.error("Failed to parse saved content", e);
+    const loadContent = async () => {
+      // 1. Try loading from Cloud URL if configured
+      if (CONSTANTS.EXTERNAL_DATA_URL) {
+        setIsLoadingCloud(true);
+        try {
+          const response = await fetch(CONSTANTS.EXTERNAL_DATA_URL);
+          if (response.ok) {
+            const cloudData = await response.json();
+            // Merge with initial to ensure structure
+            setContent(prev => ({ ...prev, ...cloudData }));
+            setUsingCloudData(true);
+            setIsLoadingCloud(false);
+            
+            // If cloud load is successful, we don't load local storage immediately
+            // to avoid conflicts, UNLESS the user has newer local changes.
+            // For simplicity, Cloud > Hardcode. Local Storage > Cloud (draft mode).
+          } else {
+            console.warn("Failed to fetch cloud content:", response.status);
+          }
+        } catch (e) {
+          console.error("Error fetching cloud content:", e);
+        } finally {
+          setIsLoadingCloud(false);
+        }
       }
-    }
+
+      // 2. Override with Local Storage (Drafts)
+      const savedContent = localStorage.getItem('zhehao_cai_portfolio_content');
+      if (savedContent) {
+        try {
+          const parsed = JSON.parse(savedContent);
+          // Only override if we really want drafts to persist over cloud
+          setContent(prev => ({ ...prev, ...parsed }));
+        } catch (e) {
+          console.error("Failed to parse saved content", e);
+        }
+      }
+    };
+
+    loadContent();
   }, []);
 
   const updateContent = (newPart: Partial<AppContent>) => {
@@ -49,33 +82,9 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const saveToLocalStorage = () => {
-    // We strictly save the data that matches the shape of AppContent
-    // We filter out icon components which might cause circular JSON issues if they were objects,
-    // but in our types they are mostly handled as references. 
-    // For safety, we rely on the fact that the initial loading handles the component mapping 
-    // (though for true dynamic editing, we'd store string keys for icons).
-    // Since this is a dev tool for the author, we assume they won't break the JSON structure too badly.
-    
-    // Deep clone to avoid mutating state during serialization if needed, 
-    // but JSON.stringify ignores functions/components usually.
-    // However, Lucide icons are functions. We need to be careful.
-    // For this implementation, we will NOT persist the 'icon' property changes in LocalStorage 
-    // effectively for the SOCIALS/INTERESTS if they are React components.
-    // We will assume 'icon' remains static for now or is handled specially.
-    
-    // Actually, to make this robust: 
-    // We only save the data. When loading, we merge data. 
-    // The "Export" function in AdminPanel will handle generating the code string.
-    
-    // For LocalStorage, we can try stringifying. If it fails due to circular structures (icons),
-    // we might need to omit them or store a simplified version. 
-    // Given the request is "add projects, links", those are strings.
-    
     const contentToSave = {
         ...content,
-        // We don't save social icons to LS because they are functions. 
-        // We revert to defaults for icons on reload if needed, or mapped by ID.
-        // For simplicity, we save everything else.
+        // Strip icons for storage
         socials: content.socials.map(s => ({ ...s, icon: null })), 
         interests: {
             en: content.interests.en.map(i => ({ ...i, icon: null })),
@@ -88,14 +97,13 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const resetContent = () => {
-    if (window.confirm("Are you sure? This will discard all local changes.")) {
-      setContent(INITIAL_CONTENT);
+    if (window.confirm("Are you sure? This will discard local changes and reload from the source (Cloud or File).")) {
       localStorage.removeItem('zhehao_cai_portfolio_content');
-      setHasUnsavedChanges(false);
+      window.location.reload();
     }
   };
 
-  // On load, we need to restore icons if they were nullified
+  // Restore icons if needed
   useEffect(() => {
     if (content.socials[0].icon === null) {
        setContent(prev => ({
@@ -107,7 +115,15 @@ export const ContentProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [content]);
 
   return (
-    <ContentContext.Provider value={{ content, updateContent, resetContent, saveToLocalStorage, hasUnsavedChanges }}>
+    <ContentContext.Provider value={{ 
+      content, 
+      updateContent, 
+      resetContent, 
+      saveToLocalStorage, 
+      hasUnsavedChanges,
+      isLoadingCloud,
+      usingCloudData
+    }}>
       {children}
     </ContentContext.Provider>
   );

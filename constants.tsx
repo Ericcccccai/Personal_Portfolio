@@ -1,6 +1,18 @@
 import { Project, Interest, SocialLink, Experience } from './types';
 import { Gamepad2, Code, Terminal, Monitor, Github, Linkedin, Mail, Twitter, Cpu, Palette, Globe } from 'lucide-react';
 
+/**
+ * CLOUD CONFIGURATION
+ * 
+ * To enable "Update on the go":
+ * 1. Use the Admin Panel (Settings -> Cloud) to "Publish to Cloud" (GitHub Gist).
+ * 2. Copy the "Raw URL" provided by the Admin Panel.
+ * 3. Paste it below into `EXTERNAL_DATA_URL`.
+ * 
+ * Once set, the website will load content from this URL instead of the hardcoded values below.
+ */
+export const EXTERNAL_DATA_URL = ""; 
+
 export const NAV_LINKS = {
   en: [
     { name: 'About', href: '#background' },
@@ -111,88 +123,84 @@ export const PROJECTS = {
   en: [
     {
       id: '1',
-      title: 'Nebula Drifter',
+      title: 'Latest Game Project 1',
       category: 'Game',
-      description: 'A fast-paced 2D roguelike space shooter built in Unity. Features procedural generation and custom shader effects for nebulae.',
-      technologies: ['Unity', 'C#', 'HLSL', 'Aseprite'],
-      imageUrl: 'https://picsum.photos/800/450?random=1',
-      demoUrl: 'https://itch.io',
-      repoUrl: 'https://github.com',
+      description: 'A recent game project available on my Itch.io page. Click the link to play directly in your browser or download.',
+      technologies: ['Unity', 'C#', 'Game Design'],
+      imageUrl: 'https://picsum.photos/800/450?random=10',
+      demoUrl: 'https://ericcccccai.itch.io/',
       featured: true
     },
     {
       id: '2',
-      title: 'Inventory System UI',
-      category: 'Web',
-      description: 'A drag-and-drop RPG inventory system prototype built with React and Framer Motion to demonstrate complex web interactions.',
-      technologies: ['React', 'TypeScript', 'Framer Motion', 'Tailwind'],
-      imageUrl: 'https://picsum.photos/800/450?random=2',
-      demoUrl: 'https://vercel.com',
-      repoUrl: 'https://github.com',
+      title: 'Latest Game Project 2',
+      category: 'Game',
+      description: 'Another exciting game prototype exploring new mechanics and player interactions.',
+      technologies: ['Unreal Engine', 'Blueprints', '3D'],
+      imageUrl: 'https://picsum.photos/800/450?random=11',
+      demoUrl: 'https://ericcccccai.itch.io/',
       featured: true
     },
     {
       id: '3',
-      title: 'Chrono Tactics',
+      title: 'Latest Game Project 3',
       category: 'Game',
-      description: 'A turn-based strategy game focusing on time-manipulation mechanics. Developed for the GMTK Game Jam 2023.',
-      technologies: ['Godot', 'GDScript', 'Pixel Art'],
-      imageUrl: 'https://picsum.photos/800/450?random=3',
-      demoUrl: 'https://itch.io',
+      description: 'An experimental game focusing on narrative design and atmospheric storytelling.',
+      technologies: ['Godot', 'GDScript', '2D'],
+      imageUrl: 'https://picsum.photos/800/450?random=12',
+      demoUrl: 'https://ericcccccai.itch.io/',
       featured: false
     },
     {
       id: '4',
-      title: 'Portfolio v1',
-      category: 'Web',
-      description: 'My previous portfolio site exploring 3D web elements using Three.js.',
-      technologies: ['Three.js', 'JavaScript', 'HTML/CSS'],
-      imageUrl: 'https://picsum.photos/800/450?random=4',
-      repoUrl: 'https://github.com',
+      title: 'Latest Game Project 4',
+      category: 'Game',
+      description: 'A jam game created within 48 hours. Tests rapid prototyping skills and scope management.',
+      technologies: ['Unity', 'C#', 'Jam'],
+      imageUrl: 'https://picsum.photos/800/450?random=13',
+      demoUrl: 'https://ericcccccai.itch.io/',
       featured: false
     }
   ] as Project[],
   zh: [
     {
       id: '1',
-      title: 'Nebula Drifter',
+      title: '最新游戏作品 1',
       category: 'Game',
-      description: '基于Unity开发的快节奏2D肉鸽太空射击游戏。特色包括程序化生成和自定义星云着色器效果。',
-      technologies: ['Unity', 'C#', 'HLSL', 'Aseprite'],
-      imageUrl: 'https://picsum.photos/800/450?random=1',
-      demoUrl: 'https://itch.io',
-      repoUrl: 'https://github.com',
+      description: '发布在我的 Itch.io 主页上的最新游戏项目。点击链接即可在浏览器中直接游玩或下载。',
+      technologies: ['Unity', 'C#', 'Game Design'],
+      imageUrl: 'https://picsum.photos/800/450?random=10',
+      demoUrl: 'https://ericcccccai.itch.io/',
       featured: true
     },
     {
       id: '2',
-      title: 'Inventory System UI',
-      category: 'Web',
-      description: '使用React和Framer Motion构建的拖放式RPG库存系统原型，展示复杂的Web交互效果。',
-      technologies: ['React', 'TypeScript', 'Framer Motion', 'Tailwind'],
-      imageUrl: 'https://picsum.photos/800/450?random=2',
-      demoUrl: 'https://vercel.com',
-      repoUrl: 'https://github.com',
+      title: '最新游戏作品 2',
+      category: 'Game',
+      description: '另一个令人兴奋的游戏原型，探索新的机制和玩家交互。',
+      technologies: ['Unreal Engine', 'Blueprints', '3D'],
+      imageUrl: 'https://picsum.photos/800/450?random=11',
+      demoUrl: 'https://ericcccccai.itch.io/',
       featured: true
     },
     {
       id: '3',
-      title: 'Chrono Tactics',
+      title: '最新游戏作品 3',
       category: 'Game',
-      description: '一款专注于时间操控机制的回合制策略游戏。为GMTK Game Jam 2023开发。',
-      technologies: ['Godot', 'GDScript', 'Pixel Art'],
-      imageUrl: 'https://picsum.photos/800/450?random=3',
-      demoUrl: 'https://itch.io',
+      description: '一款专注于叙事设计和氛围叙事的实验性游戏。',
+      technologies: ['Godot', 'GDScript', '2D'],
+      imageUrl: 'https://picsum.photos/800/450?random=12',
+      demoUrl: 'https://ericcccccai.itch.io/',
       featured: false
     },
     {
       id: '4',
-      title: 'Portfolio v1',
-      category: 'Web',
-      description: '我之前的个人作品集网站，探索了使用Three.js的3D网页元素。',
-      technologies: ['Three.js', 'JavaScript', 'HTML/CSS'],
-      imageUrl: 'https://picsum.photos/800/450?random=4',
-      repoUrl: 'https://github.com',
+      title: '最新游戏作品 4',
+      category: 'Game',
+      description: '在48小时内创作的Jam游戏。考验快速原型设计技能和范围管理。',
+      technologies: ['Unity', 'C#', 'Jam'],
+      imageUrl: 'https://picsum.photos/800/450?random=13',
+      demoUrl: 'https://ericcccccai.itch.io/',
       featured: false
     }
   ] as Project[]
@@ -270,7 +278,7 @@ export const CONTACT_CONTENT = {
 
 export const SOCIALS: SocialLink[] = [
   { platform: 'GitHub', url: 'https://github.com', icon: Github },
-  { platform: 'Itch.io', url: 'https://itch.io', icon: Gamepad2 },
+  { platform: 'Itch.io', url: 'https://ericcccccai.itch.io/', icon: Gamepad2 },
   { platform: 'LinkedIn', url: 'https://linkedin.com', icon: Linkedin },
   { platform: 'Email', url: 'mailto:Eric021202@gmail.com', icon: Mail },
 ];

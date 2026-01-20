@@ -1,21 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, X, Save, RotateCcw, Copy, Check, Plus, Trash2, Lock, ArrowRight, FileCode, Download } from 'lucide-react';
+import { Settings, X, Save, RotateCcw, Copy, Check, Plus, Trash2, Lock, ArrowRight, FileCode, Download, Upload, Cloud, Github, Loader2, Link as LinkIcon, AlertTriangle } from 'lucide-react';
 import { useContent } from '../contexts/ContentContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Project } from '../types';
+import { EXTERNAL_DATA_URL } from '../constants';
 
 const AdminPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'projects' | 'export'>('projects');
-  const { content, updateContent, saveToLocalStorage, resetContent, hasUnsavedChanges } = useContent();
+  const [activeTab, setActiveTab] = useState<'general' | 'projects' | 'cloud' | 'export'>('projects');
+  const { content, updateContent, saveToLocalStorage, resetContent, hasUnsavedChanges, usingCloudData } = useContent();
   const { language } = useLanguage();
   const [copied, setCopied] = useState(false);
 
-  // Simple Auth
+  // Auth
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [authError, setAuthError] = useState(false);
+
+  // Cloud Sync
+  const [githubToken, setGithubToken] = useState('');
+  const [gistId, setGistId] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [syncMessage, setSyncMessage] = useState('');
+  const [rawUrl, setRawUrl] = useState(EXTERNAL_DATA_URL);
+
+  useEffect(() => {
+    // Load GitHub token from local storage if available
+    const savedToken = localStorage.getItem('portfolio_gh_token');
+    const savedGistId = localStorage.getItem('portfolio_gist_id');
+    if (savedToken) setGithubToken(savedToken);
+    if (savedGistId) setGistId(savedGistId);
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,12 +44,99 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+  // GitHub Gist Logic
+  const handlePublishToCloud = async () => {
+    if (!githubToken) {
+        setSyncStatus('error');
+        setSyncMessage('Please enter a GitHub Personal Access Token');
+        return;
+    }
+
+    setIsSyncing(true);
+    setSyncStatus('idle');
+    setSyncMessage('');
+
+    try {
+        // Prepare content payload
+        // We strip icons as they are components
+        const payload = {
+            ...content,
+            socials: content.socials.map(s => ({ ...s, icon: null })),
+            interests: {
+                en: content.interests.en.map(i => ({ ...i, icon: null })),
+                zh: content.interests.zh.map(i => ({ ...i, icon: null }))
+            }
+        };
+
+        const files = {
+            "portfolio-content.json": {
+                content: JSON.stringify(payload, null, 2)
+            }
+        };
+
+        let url = 'https://api.github.com/gists';
+        let method = 'POST';
+
+        // If we have a gist ID, update it instead of creating new
+        if (gistId) {
+            url = `https://api.github.com/gists/${gistId}`;
+            method = 'PATCH';
+        }
+
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Authorization': `token ${githubToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                description: "Zhehao Cai Portfolio Content (Auto-generated)",
+                public: false,
+                files
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`GitHub API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const newRawUrl = data.files["portfolio-content.json"].raw_url;
+        
+        setGistId(data.id);
+        setRawUrl(newRawUrl);
+        
+        // Save to local storage for convenience
+        localStorage.setItem('portfolio_gh_token', githubToken);
+        localStorage.setItem('portfolio_gist_id', data.id);
+        
+        setSyncStatus('success');
+        setSyncMessage('Published successfully!');
+    } catch (error: any) {
+        setSyncStatus('error');
+        setSyncMessage(error.message || 'Failed to publish');
+    } finally {
+        setIsSyncing(false);
+    }
+  };
+
   const generateFullFileContent = () => {
     // Reconstruct the full constants.tsx file
-    // Note: We use JSON.stringify for dynamic parts. Keys will be quoted, which is valid TS/JS.
     
     return `import { Project, Interest, SocialLink, Experience } from './types';
 import { Gamepad2, Code, Terminal, Monitor, Github, Linkedin, Mail, Twitter, Cpu, Palette, Globe } from 'lucide-react';
+
+/**
+ * CLOUD CONFIGURATION
+ * 
+ * To enable "Update on the go":
+ * 1. Use the Admin Panel (Settings -> Cloud) to "Publish to Cloud" (GitHub Gist).
+ * 2. Copy the "Raw URL" provided by the Admin Panel.
+ * 3. Paste it below into \`EXTERNAL_DATA_URL\`.
+ * 
+ * Once set, the website will load content from this URL instead of the hardcoded values below.
+ */
+export const EXTERNAL_DATA_URL = "${rawUrl || ""}";
 
 export const NAV_LINKS = ${JSON.stringify(content.navLinks, null, 2)};
 
@@ -139,7 +243,7 @@ export const SECTION_TITLES = ${JSON.stringify(content.sectionTitles, null, 2)};
     const fileContent = generateFullFileContent();
     let saveSuccessful = false;
 
-    // Attempt 1: File System Access API (Works in Chrome/Edge on Desktop if not in cross-origin iframe)
+    // Attempt 1: File System Access API
     try {
       // @ts-ignore
       if (window.showSaveFilePicker) {
@@ -159,14 +263,11 @@ export const SECTION_TITLES = ${JSON.stringify(content.sectionTitles, null, 2)};
         alert('File saved successfully! Your source code is updated.');
       }
     } catch (err: any) {
-      if (err.name === 'AbortError') {
-        return; // User cancelled
-      }
-      // Silently fail here to fall back to download, as we might be in an iframe
-      console.warn("File System Access API not available or blocked:", err);
+      if (err.name === 'AbortError') return;
+      console.warn("File System Access API not available:", err);
     }
 
-    // Attempt 2: Fallback to Download (Universal)
+    // Attempt 2: Fallback to Download
     if (!saveSuccessful) {
       try {
         const blob = new Blob([fileContent], { type: 'text/typescript' });
@@ -194,8 +295,8 @@ export const PROJECTS = ${jsonProjects} as unknown as Record<string, Project[]>;
 `;
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generateExportCode());
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -212,13 +313,30 @@ export const PROJECTS = ${jsonProjects} as unknown as Record<string, Project[]>;
     });
   };
 
+  const handleImageUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Basic check for file size (warn if > 500kb as it affects Gist sync)
+      if (file.size > 500 * 1024) {
+          if (!window.confirm("This image is large (>500KB). It might make Cloud Sync slow or fail. Are you sure?")) return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) {
+          updateProject(index, 'imageUrl', reader.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const addProject = () => {
     const newProject: Project = {
       id: Date.now().toString(),
       title: 'New Project',
-      category: 'Web',
+      category: 'Game',
       description: 'Description here...',
-      technologies: ['Tech 1'],
+      technologies: ['Tech'],
       imageUrl: 'https://picsum.photos/800/450',
       demoUrl: '',
       repoUrl: '',
@@ -233,9 +351,12 @@ export const PROJECTS = ${jsonProjects} as unknown as Record<string, Project[]>;
     });
   };
 
-  const removeProject = (index: number) => {
+  const removeProject = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
     if(!window.confirm("Delete this project?")) return;
+    
     const updatedProjects = content.projects[language].filter((_, i) => i !== index);
+    
     updateContent({
       projects: {
         ...content.projects,
@@ -265,14 +386,21 @@ export const PROJECTS = ${jsonProjects} as unknown as Record<string, Project[]>;
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
-            className="fixed inset-y-0 left-0 w-full md:w-[500px] bg-slate-900 border-r border-slate-800 shadow-2xl z-50 overflow-y-auto"
+            className="fixed inset-y-0 left-0 w-full md:w-[550px] bg-slate-900 border-r border-slate-800 shadow-2xl z-50 overflow-y-auto"
           >
             <div className="p-6 min-h-full flex flex-col">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Settings className="text-primary" />
-                  {isAuthenticated ? `Content Editor (${language.toUpperCase()})` : 'Admin Access'}
-                </h2>
+                <div className="flex flex-col">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                        <Settings className="text-primary" />
+                        {isAuthenticated ? `Content Editor` : 'Admin Access'}
+                    </h2>
+                    {usingCloudData && (
+                        <span className="text-xs text-emerald-400 flex items-center gap-1 mt-1">
+                            <Cloud size={10} /> Live Cloud Data
+                        </span>
+                    )}
+                </div>
                 <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
                   <X size={24} />
                 </button>
@@ -317,21 +445,21 @@ export const PROJECTS = ${jsonProjects} as unknown as Record<string, Project[]>;
                     <button 
                       onClick={saveToLocalStorage}
                       className={`flex-1 py-2 rounded flex items-center justify-center gap-2 font-bold transition-colors ${hasUnsavedChanges ? 'bg-primary text-white' : 'bg-slate-800 text-slate-400'}`}
-                      title="Saves to browser storage (temporary)"
+                      title="Saves to browser storage (draft)"
                     >
-                      <Save size={16} /> Save Local
+                      <Save size={16} /> Save Draft
                     </button>
                     <button 
-                      onClick={handleSaveToFile}
-                      className="flex-1 py-2 rounded flex items-center justify-center gap-2 font-bold bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors border border-accent/20"
-                      title="Download or Overwrite constants.tsx"
+                      onClick={() => setActiveTab('cloud')}
+                      className={`flex-1 py-2 rounded flex items-center justify-center gap-2 font-bold border transition-colors ${activeTab === 'cloud' ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20'}`}
+                      title="Sync with GitHub Gist"
                     >
-                      <Download size={16} /> Export File
+                      <Cloud size={16} /> Go Live
                     </button>
                     <button 
                       onClick={resetContent}
                       className="px-4 py-2 bg-slate-800 text-slate-400 hover:text-red-400 rounded flex items-center justify-center"
-                      title="Reset to Default"
+                      title="Reset to Source"
                     >
                       <RotateCcw size={16} />
                     </button>
@@ -352,6 +480,12 @@ export const PROJECTS = ${jsonProjects} as unknown as Record<string, Project[]>;
                       General
                     </button>
                     <button 
+                      onClick={() => setActiveTab('cloud')}
+                      className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'cloud' ? 'border-emerald-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+                    >
+                      Cloud
+                    </button>
+                    <button 
                       onClick={() => setActiveTab('export')}
                       className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'export' ? 'border-primary text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
                     >
@@ -363,10 +497,14 @@ export const PROJECTS = ${jsonProjects} as unknown as Record<string, Project[]>;
                   {activeTab === 'projects' && (
                     <div className="space-y-6">
                       {content.projects[language].map((project, idx) => (
-                        <div key={project.id} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                        <div key={project.id} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 relative">
                           <div className="flex justify-between mb-4">
                             <span className="text-sm font-mono text-slate-500">#{idx + 1}</span>
-                            <button onClick={() => removeProject(idx)} className="text-red-400 hover:text-red-300">
+                            <button 
+                                type="button"
+                                onClick={(e) => removeProject(e, idx)} 
+                                className="text-red-400 hover:text-red-300 hover:bg-red-400/10 p-1 rounded transition-colors"
+                            >
                               <Trash2 size={16} />
                             </button>
                           </div>
@@ -405,15 +543,29 @@ export const PROJECTS = ${jsonProjects} as unknown as Record<string, Project[]>;
                                 </select>
                               </div>
                               <div>
-                                <label className="text-xs text-slate-400 block mb-1">Image URL</label>
-                                <input 
-                                  type="text" 
-                                  value={project.imageUrl} 
-                                  onChange={(e) => updateProject(idx, 'imageUrl', e.target.value)}
-                                  className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white focus:border-primary outline-none"
-                                />
+                                <label className="text-xs text-slate-400 block mb-1">Image Source</label>
+                                <div className="flex gap-2">
+                                  <input 
+                                    type="text" 
+                                    value={project.imageUrl} 
+                                    onChange={(e) => updateProject(idx, 'imageUrl', e.target.value)}
+                                    className="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white focus:border-primary outline-none text-xs"
+                                    placeholder="https://..."
+                                  />
+                                  <label className="cursor-pointer px-3 py-2 bg-slate-800 border border-slate-700 rounded hover:bg-slate-700 text-slate-300 flex items-center justify-center" title="Upload Image">
+                                    <Upload size={16} />
+                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(idx, e)} />
+                                  </label>
+                                </div>
                               </div>
                             </div>
+                            
+                            {/* Image Preview */}
+                            {project.imageUrl && (
+                                <div className="mt-2 relative w-full h-32 bg-slate-900 rounded overflow-hidden border border-slate-700">
+                                    <img src={project.imageUrl} alt="Preview" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                                </div>
+                            )}
 
                             <div>
                                 <label className="text-xs text-slate-400 block mb-1">Links (Leave empty to hide)</label>
@@ -513,6 +665,107 @@ export const PROJECTS = ${jsonProjects} as unknown as Record<string, Project[]>;
                       </div>
                   )}
 
+                  {/* Cloud Sync Tab */}
+                  {activeTab === 'cloud' && (
+                      <div className="space-y-6">
+                          <div className="bg-gradient-to-br from-emerald-900/20 to-slate-900 border border-emerald-500/30 rounded-xl p-6">
+                              <div className="flex items-center gap-3 mb-4">
+                                  <Cloud className="text-emerald-400" size={24} />
+                                  <h3 className="text-white font-bold text-lg">Cloud Synchronization</h3>
+                              </div>
+                              <p className="text-slate-300 text-sm mb-6 leading-relaxed">
+                                  Sync your portfolio content to a GitHub Gist. This allows you to update your website instantly without redeploying code.
+                              </p>
+
+                              <div className="space-y-4">
+                                  <div>
+                                      <label className="text-xs text-slate-400 mb-1 block">GitHub Personal Access Token (Classic)</label>
+                                      <input 
+                                          type="password"
+                                          value={githubToken}
+                                          onChange={(e) => setGithubToken(e.target.value)}
+                                          placeholder="ghp_..."
+                                          className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-white focus:border-emerald-500 outline-none font-mono text-sm"
+                                      />
+                                      <a 
+                                          href="https://github.com/settings/tokens" 
+                                          target="_blank" 
+                                          rel="noreferrer"
+                                          className="text-xs text-emerald-400 hover:underline mt-1 inline-block"
+                                      >
+                                          Get a token (Select 'gist' scope)
+                                      </a>
+                                  </div>
+
+                                  <div className="pt-2">
+                                      <button 
+                                          onClick={handlePublishToCloud}
+                                          disabled={isSyncing || !githubToken}
+                                          className={`w-full py-3 rounded-lg flex items-center justify-center gap-2 font-bold transition-all ${
+                                              isSyncing ? 'bg-slate-700 text-slate-400 cursor-wait' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20'
+                                          }`}
+                                      >
+                                          {isSyncing ? <Loader2 className="animate-spin" size={18} /> : <Upload size={18} />}
+                                          {isSyncing ? 'Syncing...' : (gistId ? 'Update Live Site' : 'Publish to Cloud')}
+                                      </button>
+                                  </div>
+
+                                  {syncStatus === 'success' && (
+                                      <motion.div 
+                                          initial={{ opacity: 0, y: 10 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          className="bg-emerald-900/30 border border-emerald-500/30 p-3 rounded text-sm text-emerald-200 mt-2 flex items-center gap-2"
+                                      >
+                                          <Check size={16} /> {syncMessage}
+                                      </motion.div>
+                                  )}
+
+                                  {syncStatus === 'error' && (
+                                      <motion.div 
+                                          initial={{ opacity: 0, y: 10 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          className="bg-red-900/30 border border-red-500/30 p-3 rounded text-sm text-red-200 mt-2 flex items-center gap-2"
+                                      >
+                                          <AlertTriangle size={16} /> {syncMessage}
+                                      </motion.div>
+                                  )}
+                              </div>
+                          </div>
+                          
+                          {/* Configuration Step (Only needed once) */}
+                          {gistId && rawUrl && (
+                              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                                  <h4 className="text-white font-bold mb-2 flex items-center gap-2">
+                                      <LinkIcon size={16} className="text-primary" />
+                                      One-Time Setup
+                                  </h4>
+                                  <p className="text-xs text-slate-400 mb-3">
+                                      To make these updates visible to <b>all visitors</b> (not just you), you must paste this URL into your code once.
+                                  </p>
+                                  <div className="relative mb-3">
+                                      <input 
+                                          readOnly
+                                          value={rawUrl}
+                                          className="w-full bg-black/50 border border-slate-700 rounded px-3 py-2 text-slate-300 text-xs font-mono pr-10"
+                                      />
+                                      <button 
+                                          onClick={() => copyToClipboard(rawUrl)}
+                                          className="absolute right-1 top-1 p-1 bg-slate-700 hover:bg-slate-600 rounded text-white"
+                                      >
+                                          {copied ? <Check size={14} /> : <Copy size={14} />}
+                                      </button>
+                                  </div>
+                                  <button 
+                                      onClick={handleSaveToFile}
+                                      className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white rounded text-sm font-medium flex items-center justify-center gap-2"
+                                  >
+                                      <Download size={14} /> Download Updated constants.tsx
+                                  </button>
+                              </div>
+                          )}
+                      </div>
+                  )}
+
                   {/* Export Tab */}
                   {activeTab === 'export' && (
                     <div className="space-y-6">
@@ -543,7 +796,7 @@ export const PROJECTS = ${jsonProjects} as unknown as Record<string, Project[]>;
                             {generateExportCode()}
                           </pre>
                           <button 
-                            onClick={copyToClipboard}
+                            onClick={() => copyToClipboard(generateExportCode())}
                             className="absolute top-2 right-2 p-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
                           >
                             {copied ? <Check size={16} /> : <Copy size={16} />}
